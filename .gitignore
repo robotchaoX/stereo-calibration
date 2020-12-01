@@ -27,5 +27,6 @@ Compiled Object files
 *.out
 *.app
 
+.vscode/
 build/
 calib_imgs/
