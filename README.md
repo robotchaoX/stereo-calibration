@@ -42,13 +42,13 @@ This is only for lenses which follow the pinhole model. If you have fisheye lens
 Once you have compiled the sources run the following command to calibrate the intrinsics.
 
 ```bash
-./calibrate -w [board_width] -h [board_height] -n [num_imgs] -s [square_size] -d [imgs_directory] -i [imgs_filename] -o [file_extension] -e [output_filename]
+./calibrate -w [board_width] -h [board_height] -s [square_size] -n [num_imgs] -d [imgs_directory] -i [imgs_filename] -o [file_extension] -e [output_filename]
 ```
 
-For example, the command for the test images in `calib_imgs/1/` would be
+For example, the command for the test images in `calib_imgs/stereoImg/` would be
 
 ```bash
-./calibrate -w 9 -h 6 -n 27 -s 0.02423 -d "../calib_imgs/1/" -i "left" -o "cam_left.yml" -e "jpg"
+./calibrate -w 9 -h 6 -s 0.02423 -n 27 -d "../calib_imgs/stereoImg/" -i "left" -o "cam_left.yml" -e "jpg"
 ```
 
 ### Stereo calibration for extrinisics

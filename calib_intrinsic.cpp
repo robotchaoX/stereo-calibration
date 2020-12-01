@@ -15,7 +15,6 @@ vector<vector<Point2f>> image_points;
 vector<Point2f> corners;
 vector<vector<Point2f>> left_img_points;
 
-Mat img, gray;
 Size im_size;
 
 bool doesExist(const std::string &name) {
@@ -23,11 +22,12 @@ bool doesExist(const std::string &name) {
     return (stat(name.c_str(), &buffer) == 0);
 }
 
-void setup_calibration(int board_width, int board_height, int num_imgs, float square_size, char *imgs_directory,
-                       char *imgs_filename, char *extension) {
+void setup_calibration(int board_width, int board_height, int num_imgs, float square_size, const char *imgs_directory,
+                       const char *imgs_filename, const char *extension) {
     Size board_size = Size(board_width, board_height);
     int board_n = board_width * board_height;
 
+    Mat img, gray;
     for (int k = 1; k <= num_imgs; k++) {
         char img_file[100];
         sprintf(img_file, "%s%s%d.%s", imgs_directory, imgs_filename, k, extension);
@@ -35,6 +35,7 @@ void setup_calibration(int board_width, int board_height, int num_imgs, float sq
             continue;
         img = imread(img_file, CV_LOAD_IMAGE_COLOR);
         cv::cvtColor(img, gray, CV_BGR2GRAY);
+        im_size = img.size(); //传出
 
         bool found = false;
         found =
@@ -79,24 +80,25 @@ double computeReprojectionErrors(const vector<vector<Point3f>> &objectPoints,
 }
 
 int main(int argc, char const **argv) {
-    int board_width, board_height, num_imgs;
-    float square_size;
-    char *imgs_directory;
-    char *imgs_filename;
-    char *out_file;
-    char *extension;
+    int board_width = 9, board_height = 6;
+    float square_size = 0.02423;
+    int num_imgs = 27;
+    const char *imgs_directory = "../calib_imgs/stereoImg/";
+    const char *imgs_filename = "left"; //单独标左相机
+    const char *out_file = "cam_left.yml";
+    const char *extension = "jpg";
 
+    // 解析命令行参数
     static struct poptOption options[] = {
         {"board_width", 'w', POPT_ARG_INT, &board_width, 0, "Checkerboard width", "NUM"},
         {"board_height", 'h', POPT_ARG_INT, &board_height, 0, "Checkerboard height", "NUM"},
-        {"num_imgs", 'n', POPT_ARG_INT, &num_imgs, 0, "Number of checkerboard images", "NUM"},
         {"square_size", 's', POPT_ARG_FLOAT, &square_size, 0, "Size of checkerboard square", "NUM"},
+        {"num_imgs", 'n', POPT_ARG_INT, &num_imgs, 0, "Number of checkerboard images", "NUM"},
         {"imgs_directory", 'd', POPT_ARG_STRING, &imgs_directory, 0, "Directory containing images", "STR"},
         {"imgs_filename", 'i', POPT_ARG_STRING, &imgs_filename, 0, "Image filename", "STR"},
         {"extension", 'e', POPT_ARG_STRING, &extension, 0, "Image extension", "STR"},
         {"out_file", 'o', POPT_ARG_STRING, &out_file, 0, "Output calibration filename (YML)", "STR"},
         POPT_AUTOHELP{NULL, 0, 0, NULL, 0, NULL, NULL}};
-
     POpt popt(NULL, argc, argv, options, 0);
     int c;
     while ((c = popt.getNextOpt()) >= 0) {
@@ -104,24 +106,26 @@ int main(int argc, char const **argv) {
 
     setup_calibration(board_width, board_height, num_imgs, square_size, imgs_directory, imgs_filename, extension);
 
-    printf("Starting Calibration\n");
+    printf("--Starting Calibration\n");
     Mat K;
     Mat D;
     vector<Mat> rvecs, tvecs;
     int flag = 0;
     flag |= CV_CALIB_FIX_K4;
     flag |= CV_CALIB_FIX_K5;
-    calibrateCamera(object_points, image_points, img.size(), K, D, rvecs, tvecs, flag);
+    calibrateCamera(object_points, image_points, im_size, K, D, rvecs, tvecs, flag);
+    //误差
+    cout << "--Calibration error: " << computeReprojectionErrors(object_points, image_points, rvecs, tvecs, K, D)
+         << endl;
 
-    cout << "Calibration error: " << computeReprojectionErrors(object_points, image_points, rvecs, tvecs, K, D) << endl;
-
+    //保存标定结果
     FileStorage fs(out_file, FileStorage::WRITE);
     fs << "K" << K;
     fs << "D" << D;
     fs << "board_width" << board_width;
     fs << "board_height" << board_height;
     fs << "square_size" << square_size;
-    printf("Done Calibration\n");
+    printf("--Done Calibration\n");
 
     return 0;
 }
