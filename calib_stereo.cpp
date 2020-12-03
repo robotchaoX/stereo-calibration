@@ -89,6 +89,7 @@ int main(int argc, char const *argv[]) {
     char *out_file;
     int num_imgs;
 
+    // 解析命令行参数
     static struct poptOption options[] = {
         {"num_imgs", 'n', POPT_ARG_INT, &num_imgs, 0, "Number of checkerboard images", "NUM"},
         {"leftcalib_file", 'u', POPT_ARG_STRING, &leftcalib_file, 0, "Left camera calibration", "STR"},
