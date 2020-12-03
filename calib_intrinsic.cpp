@@ -30,6 +30,7 @@ void setup_calibration(int board_width, int board_height, int num_imgs, float sq
     Mat img, gray;
     for (int k = 1; k <= num_imgs; k++) {
         char img_file[100];
+        //棋盘格图片
         sprintf(img_file, "%s%s%d.%s", imgs_directory, imgs_filename, k, extension);
         if (!doesExist(img_file))
             continue;
@@ -37,15 +38,20 @@ void setup_calibration(int board_width, int board_height, int num_imgs, float sq
         cv::cvtColor(img, gray, CV_BGR2GRAY);
         im_size = img.size(); //传出
 
+        //角点检测
         bool found = false;
         found =
             cv::findChessboardCorners(img, board_size, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
         if (found) {
             cornerSubPix(gray, corners, cv::Size(5, 5), cv::Size(-1, -1),
                          TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
+            //显示角点
             drawChessboardCorners(gray, board_size, corners, found);
+            imshow("corner", gray);
+            waitKey(100);
         }
 
+        //角点的世界坐标系
         vector<Point3f> obj;
         for (int i = 0; i < board_height; i++)
             for (int j = 0; j < board_width; j++)
@@ -113,6 +119,7 @@ int main(int argc, char const **argv) {
     int flag = 0;
     flag |= CV_CALIB_FIX_K4;
     flag |= CV_CALIB_FIX_K5;
+    //单目标定
     calibrateCamera(object_points, image_points, im_size, K, D, rvecs, tvecs, flag);
     //误差
     cout << "--Calibration error: " << computeReprojectionErrors(object_points, image_points, rvecs, tvecs, K, D)

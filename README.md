@@ -47,8 +47,14 @@ Once you have compiled the sources run the following command to calibrate the in
 
 For example, the command for the test images in `calib_imgs/stereoImg/` would be
 
+left images
 ```bash
-./calibrate -w 9 -h 6 -s 0.02423 -n 27 -d "../calib_imgs/stereoImg/" -i "left" -o "cam_left.yml" -e "jpg"
+./calibrate -w 9 -h 6 -s 0.02423 -n 27 -d ../calib_imgs/stereoImg/ -i left -o cam_left.yml -e jpg
+```
+
+right images
+```bash
+./calibrate -w 9 -h 6 -s 0.02423 -n 27 -d "../calib_imgs/stereoImg/" -i "right" -o "cam_right.yml" -e "jpg"
 ```
 
 ### Stereo calibration for extrinisics
@@ -59,10 +65,10 @@ Once you have the intrinsics calibrated for both the left and the right cameras,
 ./calibrate_stereo -n [num_imgs] -u [left_cam_calib] -v [right_cam_calib] -L [left_img_dir] -R [right_img_dir] -l [left_img_prefix] -r [right_img_prefix] -o [output_calib_file] -e [file_extension]
 ```
 
-For example, if you calibrated the left and the right cameras using the images in the `calib_imgs/1/` directory, the following command to compute the extrinsics.
+For example, if you calibrated the left and the right cameras using the images in the `calib_imgs/stereoImg/` directory, the following command to compute the extrinsics.
 
 ```bash
-./calibrate_stereo -n 27 -u cam_left.yml -v cam_right.yml -L ../calib_imgs/1/ -R ../calib_imgs/1/ -l left -r right -o cam_stereo.yml -e jpg
+./calibrate_stereo -n 27 -u cam_left.yml -v cam_right.yml -L ../calib_imgs/stereoImg/ -R ../calib_imgs/stereoImg/ -l left -r right -o cam_stereo.yml -e jpg
 ```
 
 ### Undistortion and Rectification
@@ -76,5 +82,5 @@ Once you have the stereo calibration data, you can remove the distortion and rec
 For example
 
 ```bash
-./undistort_rectify -l ../calib_imgs/1/left1.jpg -r ../calib_imgs/1/right1.jpg -c cam_stereo.yml -L left.jpg -R right.jpg
+./undistort_rectify -l ../calib_imgs/stereoImg/left1.jpg -r ../calib_imgs/stereoImg/right1.jpg -c cam_stereo.yml -L left.jpg -R right.jpg
 ```
