@@ -62,7 +62,7 @@ int main(int argc, char const *argv[]) {
     cv::Size2i image_size = cv::Size2i(im_width, im_height); // HD720(1280, 720)
 
     // Open the ZED camera
-    VideoCapture cap(2); // laptops 0
+    VideoCapture cap(0); // laptops 0
     if (!cap.isOpened())
         return -1;
     cap.grab();

@@ -16,8 +16,9 @@ vector<vector<Point2f>> left_img_points, right_img_points;
 
 Mat img1, img2, gray1, gray2;
 
-void load_image_points(int board_width, int board_height, int num_imgs, float square_size, char *leftimg_dir,
-                       char *rightimg_dir, char *leftimg_filename, char *rightimg_filename, char *extension) {
+void load_image_points(int board_width, int board_height, int num_imgs, float square_size, const char *leftimg_dir,
+                       const char *rightimg_dir, const char *leftimg_filename, const char *rightimg_filename,
+                       const char *extension) {
 
     Size board_size = Size(board_width, board_height);
     int board_n = board_width * board_height;
@@ -79,15 +80,15 @@ void load_image_points(int board_width, int board_height, int num_imgs, float sq
 }
 
 int main(int argc, char const *argv[]) {
-    char *leftcalib_file;
-    char *rightcalib_file;
-    char *leftimg_dir;
-    char *rightimg_dir;
-    char *leftimg_filename;
-    char *rightimg_filename;
-    char *extension;
-    char *out_file;
-    int num_imgs;
+    int num_imgs = 27;
+    const char *leftcalib_file = "cam_left.yml";
+    const char *rightcalib_file = "cam_right.yml";
+    const char *leftimg_dir = "../calib_imgs/stereoImg/";
+    const char *rightimg_dir = "../calib_imgs/stereoImg/";
+    const char *leftimg_filename = "left";
+    const char *rightimg_filename = "right";
+    const char *extension = "jpg";
+    const char *out_file = "cam_stereo.yml";
 
     // 解析命令行参数
     static struct poptOption options[] = {
@@ -115,7 +116,7 @@ int main(int argc, char const *argv[]) {
                       leftimg_filename, rightimg_filename, extension);
 
     printf("--Starting Calibration\n");
-    Mat K1, K2, R, F, E;
+    Mat K1, K2, R, E, F; // R 旋转矢量 T平移矢量 E本征矩阵 F基础矩阵
     Vec3d T;
     Mat D1, D2;
     fsl["K"] >> K1;
@@ -143,7 +144,8 @@ int main(int argc, char const *argv[]) {
 
     printf("--Starting Rectification\n");
 
-    cv::Mat R1, R2, P1, P2, Q;
+    cv::Mat R1, R2, P1, P2, Q; //校正旋转矩阵R，投影矩阵P 重投影矩阵Q
+    //对标定过的图像进行校正
     stereoRectify(K1, D1, K2, D2, img1.size(), R, T, R1, R2, P1, P2, Q);
 
     fs1 << "R1" << R1;

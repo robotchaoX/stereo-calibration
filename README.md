@@ -49,12 +49,16 @@ For example, the command for the test images in `calib_imgs/stereoImg/` would be
 
 left images
 ```bash
-./calibrate -w 9 -h 6 -s 0.02423 -n 27 -d ../calib_imgs/stereoImg/ -i left -o cam_left.yml -e jpg
+# ./calibrate -w 9 -h 6 -s 0.02423 -n 27 -d ../calib_imgs/stereoImg/ -i left -o cam_left.yml -e jpg
+# 棋盘格大小: 7*5角点,50mm边长,(单位m/mm对应双目标定T基线单位??)
+./calibrate -w 7 -h 5 -s 0.05 -n 27 -d ../calib_imgs/stereoImg/ -i left -o cam_left.yml -e jpg
 ```
 
 right images
 ```bash
-./calibrate -w 9 -h 6 -s 0.02423 -n 27 -d "../calib_imgs/stereoImg/" -i "right" -o "cam_right.yml" -e "jpg"
+# ./calibrate -w 9 -h 6 -s 0.02423 -n 27 -d "../calib_imgs/stereoImg/" -i "right" -o "cam_right.yml" -e "jpg"
+# 棋盘格大小: 7*5角点,50mm边长
+./calibrate -w 7 -h 5 -s 0.05 -n 27 -d "../calib_imgs/stereoImg/" -i "right" -o "cam_right.yml" -e "jpg"
 ```
 
 ### Stereo calibration for extrinisics
@@ -82,5 +86,5 @@ Once you have the stereo calibration data, you can remove the distortion and rec
 For example
 
 ```bash
-./undistort_rectify -l ../calib_imgs/stereoImg/left1.jpg -r ../calib_imgs/stereoImg/right1.jpg -c cam_stereo.yml -L left.jpg -R right.jpg
+./undistort_rectify -l ../calib_imgs/stereoImg/left1.jpg -r ../calib_imgs/stereoImg/right1.jpg -c cam_stereo.yml -L left_rectify.jpg -R right_rectify.jpg
 ```

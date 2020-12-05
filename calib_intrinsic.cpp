@@ -36,6 +36,9 @@ void setup_calibration(int board_width, int board_height, int num_imgs, float sq
             continue;
         img = imread(img_file, CV_LOAD_IMAGE_COLOR);
         cv::cvtColor(img, gray, CV_BGR2GRAY);
+        // add blur
+        cv::GaussianBlur(gray, gray, cv::Size(3, 3), 0);
+
         im_size = img.size(); //传出
 
         //角点检测
@@ -46,16 +49,21 @@ void setup_calibration(int board_width, int board_height, int num_imgs, float sq
             cornerSubPix(gray, corners, cv::Size(5, 5), cv::Size(-1, -1),
                          TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
             //显示角点
-            drawChessboardCorners(gray, board_size, corners, found);
-            imshow("corner", gray);
+            Mat img_corners = img.clone();
+            drawChessboardCorners(img_corners, board_size, corners, found);
+            imshow("img_corners", img_corners);
             waitKey(100);
+            //保存角点
+            char img_corn_file[100];
+            sprintf(img_corn_file, "%s_corners%d.%s", imgs_filename, k, extension);
+            imwrite(img_corn_file, img_corners);
         }
 
         //角点的世界坐标系
         vector<Point3f> obj;
         for (int i = 0; i < board_height; i++)
             for (int j = 0; j < board_width; j++)
-                obj.push_back(Point3f((float)j * square_size, (float)i * square_size, 0));
+                obj.push_back(Point3f((float)j * square_size, (float)i * square_size, 0)); //单位m/mm对应双目T基线单位??
 
         if (found) {
             cout << k << ". Found corners!" << endl;
@@ -86,8 +94,8 @@ double computeReprojectionErrors(const vector<vector<Point3f>> &objectPoints,
 }
 
 int main(int argc, char const **argv) {
-    int board_width = 9, board_height = 6;
-    float square_size = 0.02423;
+    int board_width = 7, board_height = 5;
+    float square_size = 0.05;
     int num_imgs = 27;
     const char *imgs_directory = "../calib_imgs/stereoImg/";
     const char *imgs_filename = "left"; //单独标左相机
@@ -113,14 +121,16 @@ int main(int argc, char const **argv) {
     setup_calibration(board_width, board_height, num_imgs, square_size, imgs_directory, imgs_filename, extension);
 
     printf("--Starting Calibration\n");
-    Mat K;
-    Mat D;
-    vector<Mat> rvecs, tvecs;
-    int flag = 0;
-    flag |= CV_CALIB_FIX_K4;
-    flag |= CV_CALIB_FIX_K5;
+    Mat K; //摄像机内参
+    Mat D; //畸变系数
+    vector<Mat> rvecs, tvecs; //存储每张图片的旋量向量和平移向量
+    int flag = 0; // todo ??
+    flag |= CV_CALIB_FIX_K3;
+    // flag |= CV_CALIB_FIX_K4;
+    // flag |= CV_CALIB_FIX_K5;
     //单目标定
     calibrateCamera(object_points, image_points, im_size, K, D, rvecs, tvecs, flag);
+
     //误差
     cout << "--Calibration error: " << computeReprojectionErrors(object_points, image_points, rvecs, tvecs, K, D)
          << endl;
@@ -133,6 +143,17 @@ int main(int argc, char const **argv) {
     fs << "board_height" << board_height;
     fs << "square_size" << square_size;
     printf("--Done Calibration\n");
+
+    //去畸变验证
+    char img1_file[100];
+    sprintf(img1_file, "%s%s%d.%s", imgs_directory, imgs_filename, 1, extension);
+    Mat img_0 = imread(img1_file, CV_LOAD_IMAGE_COLOR);
+    Mat img_undist;
+    undistort(img_0, img_undist, K, D);
+    cout << "K: \n" << K << endl;
+    cout << "D: \n" << D << endl;
+    imshow("去畸变验证1", img_undist);
+    waitKey(1000);
 
     return 0;
 }
