@@ -15,13 +15,17 @@
 using namespace std;
 using namespace cv;
 
+/**
+ * @brief UVC Capture -- opencv-native
+ * You can also use a standard UVC camera in OpenCV to capture raw stereo video.
+ */
 int main(int argc, char const *argv[]) {
 
     //图片尺寸
     int im_width = 1280;
     int im_height = 720;
     //图片存储位置
-    const char *imgs_directory = "./calib_imgs/";
+    const char *imgs_directory = "./save_calib_imgs/";
     //图片后缀
     const char *extension = "jpg";
 
@@ -34,9 +38,7 @@ int main(int argc, char const *argv[]) {
     if (0 != access(imgs_directory, 00)) { // 00表示只判断是否存在
         mkdir(imgs_directory, 0777); // 创建文件夹
     }
-    // // todo 删除目录,只能删除空目录??
-    // // rmdir(imgs_directory); // warning
-    // // ./calib_imgs/left或right文件夹必须存在
+    // //! imwrite ./calib_imgs/left或right文件夹必须存在
     // if (0 != access(imgs_directory, 00)) { // 00表示只判断是否存在
     //     mkdir(imgs_directory, 0777); // 创建文件夹
     //     mkdir((string(imgs_directory) + "/left").c_str(), 0777); // 创建文件夹
@@ -61,10 +63,16 @@ int main(int argc, char const *argv[]) {
     //单张图片尺寸
     cv::Size2i image_size = cv::Size2i(im_width, im_height); // HD720(1280, 720)
 
+    /////////// IMPORTANT ///////////////
+    // Assuming here that ZED is connected under device 0 (/dev/video0 for Linux or first camera listed on Windows)
+    // On laptops, you may have to change to 2 if the first listed camera is the integrated webcam.
+    ////////////////////////////////////
     // Open the ZED camera
-    VideoCapture cap(0); // laptops 0
-    if (!cap.isOpened())
+    VideoCapture cap(2); // laptops 0
+    if (!cap.isOpened()) {
+        cout << "VideoCapture open failed" << endl;
         return -1;
+    }
     cap.grab();
     // Set the video resolution (2*Width * Height) // HD720(1280,720)
     cap.set(cv::CAP_PROP_FRAME_WIDTH, image_size.width * 2); // 1280*2
@@ -84,9 +92,15 @@ int main(int argc, char const *argv[]) {
         left_raw = frame_raw(cv::Rect(0, 0, frame_raw.cols / 2, frame_raw.rows));
         right_raw = frame_raw(cv::Rect(frame_raw.cols / 2, 0, frame_raw.cols / 2, frame_raw.rows));
         // Display images
-        imshow("frame_raw RAW", frame_raw);
-        imshow("left RAW", left_raw);
-        imshow("right RAW", right_raw);
+        namedWindow("frame_raw", CV_WINDOW_NORMAL);
+        resizeWindow("frame_raw", 1280, 760);
+        imshow("frame_raw", frame_raw);
+        namedWindow("left_raw", CV_WINDOW_NORMAL);
+        resizeWindow("left_raw", 640, 480);
+        imshow("left_raw", left_raw);
+        namedWindow("right_raw", CV_WINDOW_NORMAL);
+        resizeWindow("right_raw", 640, 480);
+        imshow("right_raw", right_raw);
 
         //空格保存
         if (key == ' ') {

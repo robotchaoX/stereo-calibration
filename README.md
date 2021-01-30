@@ -6,7 +6,10 @@ This repository contains some sources to calibrate the intrinsics of individual 
 
 - OpenCV
 - popt
-
+```bash
+sudo apt install libopencv-dev
+sudo apt install libpopt-dev
+```
 ### Compilation
 
 Compile all the files using the following commands.
